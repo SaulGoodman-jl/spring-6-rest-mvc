@@ -1,15 +1,17 @@
 package guru.springframework.spring6restmvc.controllers;
 
+import guru.springframework.spring6restmvc.entities.BeerOrder;
+import guru.springframework.spring6restmvc.model.BeerOrderCreateDTO;
 import guru.springframework.spring6restmvc.model.BeerOrderDTO;
+import guru.springframework.spring6restmvc.model.BeerOrderLineCreateDTO;
 import guru.springframework.spring6restmvc.services.BeerOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.UUID;
 
 @Slf4j
@@ -30,8 +32,15 @@ public class BeerOrderController {
     }
 
     @GetMapping(BEER_ORDER_PATH_ID)
-    public BeerOrderDTO getBeerOrderById(@PathVariable("beerOrderId")UUID id) {
+    public BeerOrderDTO getBeerOrderById(@PathVariable("beerOrderId") UUID id) {
         log.debug("getBeerOrderById - in controller");
         return beerOrderService.getBeerOrderById(id).orElseThrow(NotFoundException::new);
+    }
+
+    @PostMapping(BEER_ORDER_PATH)
+    public ResponseEntity<Void> createOrder(@RequestBody BeerOrderCreateDTO beerOrderCreateDTO) {
+        BeerOrder savedNewBeerOrder = beerOrderService.saveNewBeerOrder(beerOrderCreateDTO);
+
+        return ResponseEntity.created(URI.create(BEER_ORDER_PATH + "/" + savedNewBeerOrder.getId().toString())).build();
     }
 }
