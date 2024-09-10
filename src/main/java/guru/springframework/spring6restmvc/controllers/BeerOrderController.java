@@ -4,6 +4,7 @@ import guru.springframework.spring6restmvc.entities.BeerOrder;
 import guru.springframework.spring6restmvc.model.BeerOrderCreateDTO;
 import guru.springframework.spring6restmvc.model.BeerOrderDTO;
 import guru.springframework.spring6restmvc.model.BeerOrderLineCreateDTO;
+import guru.springframework.spring6restmvc.model.BeerOrderUpdateDTO;
 import guru.springframework.spring6restmvc.services.BeerOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,5 +43,10 @@ public class BeerOrderController {
         BeerOrder savedNewBeerOrder = beerOrderService.saveNewBeerOrder(beerOrderCreateDTO);
 
         return ResponseEntity.created(URI.create(BEER_ORDER_PATH + "/" + savedNewBeerOrder.getId().toString())).build();
+    }
+
+    @PutMapping(BEER_ORDER_PATH_ID)
+    public ResponseEntity<BeerOrderDTO> updateOrder(@PathVariable UUID beerOrderId, @RequestBody BeerOrderUpdateDTO beerOrderUpdateDTO) {
+        return ResponseEntity.ok(beerOrderService.updateOrder(beerOrderId, beerOrderUpdateDTO));
     }
 }
