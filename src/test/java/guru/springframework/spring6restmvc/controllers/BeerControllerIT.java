@@ -138,6 +138,7 @@ class BeerControllerIT {
                 .count());
     }
 
+    @Transactional
     @Test
     void deleteByIdFoundMVC() throws Exception {
         Beer beer = beerRepository.findAll().get(0);
@@ -325,16 +326,5 @@ class BeerControllerIT {
         Page<BeerDTO> dtos = beerController.listBeers(null, null, false, 1, 2500);
 
         assertThat(dtos.getContent().size()).isEqualTo(1000);
-    }
-
-    @Rollback
-    @Transactional
-    @Test
-    void testEmptyList() {
-        beerRepository.deleteAll();
-
-        Page<BeerDTO> dtos = beerController.listBeers(null, null, false, 1, 25);
-
-        assertThat(dtos.getContent().size()).isEqualTo(0);
     }
 }

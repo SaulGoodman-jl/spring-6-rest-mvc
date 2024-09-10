@@ -135,4 +135,20 @@ class BeerOrderControllerTestIT {
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerRef", is(newCustomerRef)));
     }
+
+    @Transactional
+    @Test
+    void testDeleteBeerOrder() throws Exception {
+        BeerOrder beerOrder = beerOrderRepository.findAll().get(0);
+
+        mockMvc.perform(delete(BeerOrderController.BEER_ORDER_PATH_ID, beerOrder.getId())
+                        .with(jwtRequestPostProcessor))
+                .andExpect(status().isNoContent());
+
+        assertTrue(beerOrderRepository.findById(beerOrder.getId()).isEmpty());
+
+        mockMvc.perform(delete(BeerOrderController.BEER_ORDER_PATH_ID, beerOrder.getId())
+                        .with(jwtRequestPostProcessor))
+                .andExpect(status().isNotFound());
+    }
 }
