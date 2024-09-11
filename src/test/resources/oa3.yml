@@ -91,6 +91,63 @@ paths:
             '*/*':
               schema:
                 type: string
+  /api/v1/beerOrder/{beerOrderId}:
+    get:
+      tags:
+      - beer-order-controller
+      operationId: getBeerOrderById
+      parameters:
+      - name: beerOrderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BeerOrderDTO"
+    put:
+      tags:
+      - beer-order-controller
+      operationId: updateOrder
+      parameters:
+      - name: beerOrderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeerOrderUpdateDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BeerOrderDTO"
+    delete:
+      tags:
+      - beer-order-controller
+      operationId: deleteOrder
+      parameters:
+      - name: beerOrderId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
   /api/v1/beer/{beerId}:
     get:
       tags:
@@ -275,6 +332,44 @@ paths:
             '*/*':
               schema:
                 type: string
+  /api/v1/beerOrder:
+    get:
+      tags:
+      - beer-order-controller
+      operationId: listBeerOrders
+      parameters:
+      - name: pageNumber
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageBeerOrderDTO"
+    post:
+      tags:
+      - beer-order-controller
+      operationId: createOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeerOrderCreateDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
 components:
   schemas:
     CustomerDTO:
@@ -294,6 +389,48 @@ components:
         updateDate:
           type: string
           format: date-time
+    BeerOrderLineUpdateDTO:
+      required:
+      - beerId
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        beerId:
+          type: string
+          format: uuid
+        orderQuantity:
+          minimum: 1
+          type: integer
+          format: int32
+        quantityAllocated:
+          type: integer
+          format: int32
+    BeerOrderShipmentUpdateDTO:
+      required:
+      - trackingNumber
+      type: object
+      properties:
+        trackingNumber:
+          type: string
+    BeerOrderUpdateDTO:
+      required:
+      - customerId
+      type: object
+      properties:
+        customerRef:
+          type: string
+        customerId:
+          type: string
+          format: uuid
+        beerOrderLines:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/BeerOrderLineUpdateDTO"
+        beerOrderShipment:
+          $ref: "#/components/schemas/BeerOrderShipmentUpdateDTO"
     BeerDTO:
       required:
       - beerName
@@ -336,6 +473,102 @@ components:
         updatedDate:
           type: string
           format: date-time
+    BeerOrderDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        createdDate:
+          type: string
+          format: date-time
+        lastModifiedDate:
+          type: string
+          format: date-time
+        customerRef:
+          type: string
+        customer:
+          $ref: "#/components/schemas/CustomerDTO"
+        beerOrderLines:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/BeerOrderLineDTO"
+        beerOrderShipment:
+          $ref: "#/components/schemas/BeerOrderShipmentDTO"
+    BeerOrderLineDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        createdDate:
+          type: string
+          format: date-time
+        lastModifiedDate:
+          type: string
+          format: date-time
+        beer:
+          $ref: "#/components/schemas/BeerDTO"
+        orderQuantity:
+          minimum: 1
+          type: integer
+          format: int32
+        quantityAllocated:
+          type: integer
+          format: int32
+    BeerOrderShipmentDTO:
+      required:
+      - trackingNumber
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        trackingNumber:
+          type: string
+        createdDate:
+          type: string
+          format: date-time
+        lastModifiedDate:
+          type: string
+          format: date-time
+    BeerOrderCreateDTO:
+      required:
+      - customerId
+      type: object
+      properties:
+        customerRef:
+          type: string
+        customerId:
+          type: string
+          format: uuid
+        beerOrderLines:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/BeerOrderLineCreateDTO"
+    BeerOrderLineCreateDTO:
+      required:
+      - beerId
+      type: object
+      properties:
+        beerId:
+          type: string
+          format: uuid
+        orderQuantity:
+          minimum: 1
+          type: integer
+          format: int32
     PageBeerDTO:
       type: object
       properties:
@@ -378,20 +611,52 @@ components:
           $ref: "#/components/schemas/SortObject"
         paged:
           type: boolean
-        unpaged:
-          type: boolean
         pageSize:
           type: integer
           format: int32
         pageNumber:
           type: integer
           format: int32
+        unpaged:
+          type: boolean
     SortObject:
       type: object
       properties:
         empty:
           type: boolean
+        sorted:
+          type: boolean
         unsorted:
           type: boolean
-        sorted:
+    PageBeerOrderDTO:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeerOrderDTO"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        empty:
           type: boolean
